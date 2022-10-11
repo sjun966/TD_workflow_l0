@@ -1,0 +1,42 @@
+# specify the TD database
+# test123
+_export:
+  td:
+    database: partner_northstar
+  # 통합 후 db이름 (cdp_unification_nsc_p01)
+  canonical_db_name: nsc14
+  # 통합 id명
+  canonical_id_name: td_id
+
+
++unification:
+  # unify 엔진 불러오기
+  http_call>: https://api-cdp.ap02.treasuredata.com/unifications/workflow_call
+  headers:
+    - authorization: ${secret:td.apikey}
+  method: POST
+  retry: true
+  content_format: json
+  content:
+
+    early_access: true
+    full_refresh: true
+    unification:
+      !include : unify.yml
+
+# 검증과정 추가 확인
+# 검증쿼리
++check_unification_result:
+  +check_unify:
+    td_for_each>: queries/check_unify.sql
+    _do: 
+      #결과가 없을 경우와 있을 경우 구분해서 써줘야함
+      if>: ${td.each.cnt_canonical_ids > 1}
+      _do:
+        +send_email:
+          mail>:
+            data: There are ${td.each.id}/${td.each.id_key_type}/${td.each.cnt_canonical_ids} cases which were not merged. Need to increase merge_iterations
+          subject: "Need to modify ${canonical_db_name} unification option"
+          to: [seunjun.part@northstar.co.kr]
+          #to: [shbae1225@northstar.co.kr]
+          html: true

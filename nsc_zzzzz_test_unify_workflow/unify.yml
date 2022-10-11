@@ -1,0 +1,146 @@
+#test123
+#test345
+#test567
+name: ${canonical_db_name}
+
+keys:
+  - name: customer_id
+    invalid_texts: ['']
+
+  # - name: td_client_id
+  #   invalid_texts: ['']
+  # invalid_texts : invalid한 텍스트나 valid한 텍스트가 무엇인지 정의
+
+  - name: email
+    invalid_texts: ['']
+
+  - name: td_global_id
+    invalid_texts: ['']
+
+tables:
+  - database: nsc_p01_l1
+    table: l1_customers
+    key_columns:
+      - {column: customer_id, key: customer_id}
+      - {column: email,  key: email}      
+
+  - database: nsc_p01_l1
+    table: l1_logins
+    key_columns:
+      - {column: customer_id, key: customer_id}    
+
+  - database: nsc_p01_l1
+    table: l1_orders
+    key_columns:
+      - {column: customer_id, key: customer_id}    
+
+  - database: nsc_p01_l1
+    table: l1_order_items
+    key_columns:
+      - {column: customer_id, key: customer_id}
+
+  - database: nsc_p01_l1
+    table: l1_ratings
+    key_columns:
+      - {column: email_id,  key: email}
+
+  - database: nsc_p01_l1
+    table: l1_email_send
+    key_columns:
+      - {column: email, key: email}    
+
+  - database: nsc_p01_l1
+    table: l1_email_open
+    key_columns:
+      - {column: email, key: email}    
+
+  - database: nsc_p01_l1
+    table: mapping_master
+    key_columns:
+      - {column: customer_id, key: customer_id}   
+      - {column: td_global_id, key: td_global_id} 
+
+  - database: nsc_p01_l0
+    table: l0_g_gtm_info
+    key_columns:
+      - {column: td_global_id, key: td_global_id}    
+
+
+# l1 gtm 테이블을 만들지 않고 l0 gtm과 l0_mappings를 사용한 이유
+# parent segment에 실시간 웹행동 프로필 API를 사용할 때
+# 웹행동 데이터가 직접 들어오는 l0_gtm 테이블이 필요하기 때문
+# 데이터 전처리를 한 웹행동 데이터가 필요한 경우 l1 gtm을 사용해도 된다.
+# (다만 parent segment를 만들 땐 무조건 l0 gtm 테이블 사용)
+
+      
+
+canonical_ids:
+  - name: ${canonical_id_name}
+    merge_by_keys: [customer_id,email,td_global_id]
+    merge_iterations: 3
+    # merge_iterations : id를 통합하는 과정을 반복하는 횟수 (default : 3)
+    # 같은 key를 가지고 있는데 통합 id가 다를 경우 통합하는 횟수가 부족한 것이므로 올려주어야 한다.
+    # incremental_merge_iterations: 5
+    # 증분값인 key에 대한 통합을 할 경우 사용
+    # test
+
+master_tables:
+  - name: master
+    canonical_id: ${canonical_id_name}
+    attributes:
+      - name: customer_id
+        source_columns:
+          - {table: l1_customers,          column: customer_id,      priority: 1}
+          - {table: l1_logins,          column: customer_id,      priority: 2}
+          - {table: l1_orders,          column: customer_id,      priority: 3}
+          - {table: l1_order_items,          column: customer_id,      priority: 4}
+
+      - name: email
+        source_columns:
+          - {table: l1_customers,          column: email,      priority: 1}
+          - {table: l1_email_send,          column: email,      priority: 2}
+          - {table: l1_email_open,          column: email,      priority: 3}
+
+      - name: td_global_id
+        source_columns:
+          - {table: mapping_master,          column: td_global_id,      priority: 1}
+
+      - name: login_id
+        source_columns:
+          - {table: l1_logins,          column: login_id,      priority: 1}
+
+      - name: first_name
+        source_columns:
+          - {table: l1_customers,          column: first_name,      priority: 1}
+      
+      - name: last_name
+        source_columns:
+          - {table: l1_customers,          column: last_name,      priority: 1}
+
+      - name: age
+        source_columns:
+          - {table: l1_customers,          column: age,      priority: 1}
+      
+      - name: gender
+        source_columns:
+          - {table: l1_customers,          column: gender,      priority: 1}
+      
+      - name: phone_number
+        source_columns:
+          - {table: l1_customers,          column: phone_number,      priority: 1}
+
+      - name: street_address
+        source_columns:
+          - {table: l1_customers,          column: street_address,      priority: 1}
+
+      - name: post_code
+        source_columns:
+          - {table: l1_customers,          column: post_code,      priority: 1}
+
+      - name: city
+        source_columns:
+          - {table: l1_customers,          column: city,      priority: 1}
+
+      - name: hobby
+        source_columns:
+          - {table: l1_customers,          column: code_name,      priority: 1}
