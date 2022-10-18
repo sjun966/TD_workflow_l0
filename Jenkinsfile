@@ -7,7 +7,7 @@ pipeline {
         stage('build') {
             steps {
                 dir ('<workflow directory>') {
-                    sh "td -e https://api.treasuredata.com wf push <workflow_name>"   
+                    sh "td -e https://api.ap02.treasuredata.com wf push <workflow_name>"   
                 }
             }
         }
